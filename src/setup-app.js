@@ -109,8 +109,13 @@
     if (statusDetailsEl) statusDetailsEl.textContent = '';
 
     return httpJson('/setup/api/status').then(function (j) {
-      var ver = j.openclawVersion ? (' | ' + j.openclawVersion) : '';
-      setStatus((j.configured ? 'Configured' : 'Not configured - run setup below') + ver);
+      setStatus(j.configured ? 'Configured' : 'Not configured');
+
+      var dotEl = document.getElementById('statusDot');
+      if (dotEl) dotEl.className = 'dot ' + (j.configured ? 'ok' : 'warn');
+
+      var verEl = document.getElementById('statusVersion');
+      if (verEl) verEl.textContent = j.openclawVersion || '';
 
       if (statusDetailsEl) {
         var parts = [];
@@ -332,11 +337,10 @@
       for (var i = 0; i < ids.length; i++) {
         (function (id) {
           var row = document.createElement('div');
-          row.style.marginTop = '0.25rem';
+          row.className = 'device-row';
           var btn = document.createElement('button');
           btn.textContent = 'Approve ' + id;
-          btn.style.background = '#111';
-          btn.style.marginRight = '0.5rem';
+          btn.className = 'btn small';
           btn.onclick = function () { approveDevice(id); };
           var code = document.createElement('code');
           code.textContent = id;

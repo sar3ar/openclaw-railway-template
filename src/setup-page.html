@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>OpenClaw Setup</title>
+  <link rel="icon" type="image/jpeg" href="/setup/logo.jpg" />
+  <style>
+    /*
+     * Design tokens mirror the OpenClaw Control UI "claw" theme (dark).
+     * Source: openclaw/dist/control-ui/assets/control-ui-core-*.css
+     */
+    :root {
+      --bg: #0e1015;
+      --bg-elevated: #191c24;
+      --bg-hover: #1f2330;
+      --card: #161920;
+      --text: #bcbcc0;
+      --text-strong: #f4f4f5;
+      --muted: #8b8b94;
+      --border: #1e2028;
+      --border-strong: #2e3040;
+      --border-hover: #3e4050;
+      --accent: #ff5c5c;
+      --accent-hover: #ff7070;
+      --accent-subtle: rgba(255, 92, 92, 0.10);
+      --primary: #d13c3c;
+      --primary-hover: #e04848;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --danger: #f87171;
+      --radius-sm: 6px;
+      --radius: 10px;
+      --radius-lg: 14px;
+      --font-body: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html { color-scheme: dark; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--text);
+      background:
+        radial-gradient(900px 480px at 12% -10%, rgba(255, 92, 92, 0.07), transparent 60%),
+        radial-gradient(700px 420px at 92% -5%, rgba(20, 184, 166, 0.05), transparent 55%),
+        var(--bg);
+    }
+
+    .shell { max-width: 780px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+
+    /* ---------- Header ---------- */
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .brand { display: flex; align-items: center; gap: 0.65rem; }
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      flex: none;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid var(--border-strong);
+    }
+    .brand-name { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; color: var(--text-strong); }
+    .brand-sub { font-size: 12px; color: var(--muted); }
+    .top-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+    /* ---------- Cards ---------- */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.4rem;
+      margin: 0 0 1rem;
+    }
+    .card h2 { margin: 0; font-size: 14px; font-weight: 650; letter-spacing: -0.01em; color: var(--text-strong); }
+    .card > .muted { margin: 0.35rem 0 0; }
+    .muted { color: var(--muted); font-size: 13px; }
+    .hint { margin-top: 0.35rem; font-size: 12.5px; color: var(--muted); }
+    .hint strong { color: var(--text); }
+    code {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.1rem 0.35rem;
+      color: var(--text-strong);
+    }
+
+    /* ---------- Status ---------- */
+    .status-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; font-size: 15px; font-weight: 600; color: var(--text-strong); }
+    .dot { width: 9px; height: 9px; border-radius: 9999px; background: var(--muted); flex: none; }
+    .dot.ok { background: var(--ok); box-shadow: 0 0 10px rgba(34, 197, 94, 0.5); }
+    .dot.warn { background: var(--warn); box-shadow: 0 0 10px rgba(245, 158, 11, 0.45); }
+    .chip {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--muted);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      padding: 0.15rem 0.6rem;
+    }
+    .chip:empty { display: none; }
+    .status-detail { margin-top: 0.5rem; white-space: pre-line; }
+
+    /* ---------- Steps ---------- */
+    .step-head { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+    .step-num {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--accent);
+      background: var(--accent-subtle);
+      border: 1px solid rgba(255, 92, 92, 0.25);
+      border-radius: 9999px;
+      padding: 0.15rem 0.55rem;
+      flex: none;
+    }
+
+    /* ---------- Fields ---------- */
+    label.field { display: block; margin-top: 1rem; font-size: 12.5px; font-weight: 600; color: var(--text-strong); }
+    input:not([type]), input[type="text"], input[type="password"], input[type="file"], select, textarea {
+      width: 100%;
+      margin-top: 0.4rem;
+      background: var(--bg);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      padding: 0.6rem 0.75rem;
+      font: inherit;
+      font-size: 13.5px;
+      color: var(--text-strong);
+      outline: none;
+      transition: border-color 120ms ease, box-shadow 120ms ease;
+    }
+    input::placeholder { color: var(--muted); }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255, 92, 92, 0.18); }
+    select {
+      appearance: none;
+      background-image:
+        linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+        linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+      background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+      background-size: 5px 5px;
+      background-repeat: no-repeat;
+      padding-right: 2rem;
+    }
+    textarea { min-height: 220px; resize: vertical; margin-top: 0.75rem; }
+    textarea, .mono { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.5; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
+
+    /* ---------- Buttons ---------- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      font: inherit;
+      font-size: 13.5px;
+      font-weight: 600;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-strong);
+      background: var(--bg-elevated);
+      color: var(--text-strong);
+      padding: 0.55rem 1rem;
+      cursor: pointer;
+      transition: background 120ms ease, border-color 120ms ease, transform 60ms ease;
+    }
+    .btn:hover { background: var(--bg-hover); border-color: var(--border-hover); }
+    .btn:active { transform: translateY(1px); }
+    .btn.primary { background: var(--primary); border-color: transparent; color: #fff; }
+    .btn.primary:hover { background: var(--primary-hover); }
+    .btn.danger { background: transparent; border-color: rgba(248, 113, 113, 0.35); color: var(--danger); }
+    .btn.danger:hover { background: rgba(248, 113, 113, 0.08); border-color: rgba(248, 113, 113, 0.6); }
+    .btn.small { padding: 0.35rem 0.75rem; font-size: 12.5px; }
+    .btn-row { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; align-items: center; }
+    a.btn { text-decoration: none; }
+
+    /* ---------- Output ---------- */
+    pre.out {
+      margin: 0.9rem 0 0;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.85rem 1rem;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.55;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 340px;
+      overflow: auto;
+    }
+    pre.out:empty { display: none; }
+
+    /* ---------- File input ---------- */
+    input[type="file"] { font-size: 13px; color: var(--muted); padding: 0.45rem; }
+    input[type="file"]::file-selector-button {
+      font: inherit;
+      font-weight: 600;
+      font-size: 13px;
+      background: var(--bg-elevated);
+      color: var(--text-strong);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      padding: 0.45rem 0.9rem;
+      margin-right: 0.8rem;
+      cursor: pointer;
+    }
+    input[type="file"]::file-selector-button:hover { background: var(--bg-hover); }
+
+    /* ---------- Advanced sections ---------- */
+    details.adv { margin: 0 0 1rem; border: 1px solid var(--border); border-radius: var(--radius-lg); background: transparent; }
+    details.adv summary {
+      list-style: none;
+      cursor: pointer;
+      user-select: none;
+      padding: 0.95rem 1.4rem;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-strong);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    details.adv summary::-webkit-details-marker { display: none; }
+    details.adv summary::after {
+      content: "";
+      margin-left: auto;
+      width: 8px;
+      height: 8px;
+      border-right: 1.5px solid var(--muted);
+      border-bottom: 1.5px solid var(--muted);
+      transform: rotate(45deg);
+      transition: transform 150ms ease;
+    }
+    details.adv[open] summary::after { transform: rotate(-135deg); }
+    details.adv .card { border: 0; background: transparent; padding-top: 0; margin-bottom: 0.5rem; }
+
+    /* ---------- Misc rows (populated by setup-app.js) ---------- */
+    .device-row { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.5rem; flex-wrap: wrap; }
+    .device-list { margin-top: 0.75rem; }
+    .adv-toggle { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.9rem; font-size: 13px; color: var(--muted); cursor: pointer; }
+    .adv-toggle:hover { color: var(--text); }
+    .adv-toggle input { accent-color: var(--accent); width: 14px; height: 14px; margin: 0; }
+    .console-row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.9rem; flex-wrap: wrap; }
+    .console-row select { flex: 1.4; min-width: 0; }
+    .console-row input { flex: 1; min-width: 0; }
+    .console-row .btn { margin-top: 0; }
+
+    a { color: var(--accent-hover); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    @media (max-width: 640px) {
+      .shell { padding: 1.25rem 0.9rem 3rem; }
+      .card { padding: 1rem; }
+      .grid2 { grid-template-columns: 1fr; }
+      .console-row select, .console-row input { flex: 1 1 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+
+    <header class="topbar">
+      <div class="brand">
+        <img class="brand-logo" src="/setup/logo.jpg" alt="OpenClaw logo" />
+        <div>
+          <div class="brand-name">OpenClaw</div>
+          <div class="brand-sub">Setup</div>
+        </div>
+      </div>
+      <div class="top-actions">
+        <a class="btn" href="/setup/export">Download backup</a>
+        <a class="btn primary" href="/openclaw" target="_blank" rel="noopener">Open Control UI</a>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="status-row">
+        <span class="dot" id="statusDot"></span>
+        <span id="status">Loading…</span>
+        <span class="chip" id="statusVersion"></span>
+      </div>
+      <div id="statusDetails" class="muted status-detail"></div>
+    </section>
+
+    <section class="card">
+      <div class="step-head">
+        <h2>Model &amp; auth provider</h2>
+        <span class="step-num">step 1</span>
+      </div>
+      <p class="muted">Matches the groups shown in the terminal onboarding.</p>
+
+      <label class="field">Provider group</label>
+      <select id="authGroup">
+        <option>Loading providers…</option>
+      </select>
+
+      <label class="field">Auth method</label>
+      <select id="authChoice">
+        <option>Loading methods…</option>
+      </select>
+      <label class="adv-toggle"><input type="checkbox" id="showAdvancedAuth" /> <span>Show interactive OAuth options (advanced)</span></label>
+
+      <label class="field">Key / Token (if required)</label>
+      <input id="authSecret" type="password" placeholder="Paste API key / token if applicable" />
+
+      <label class="field">Wizard flow</label>
+      <select id="flow">
+        <option value="quickstart">quickstart</option>
+        <option value="advanced">advanced</option>
+        <option value="manual">manual</option>
+      </select>
+    </section>
+
+    <section class="card">
+      <div class="step-head">
+        <h2>Channels</h2>
+        <span class="step-num">step 2 · optional</span>
+      </div>
+      <p class="muted">You can also add channels later inside OpenClaw, but this helps you get messaging working immediately.</p>
+
+      <label class="field">Telegram bot token</label>
+      <input id="telegramToken" type="password" placeholder="123456:ABC…" />
+      <div class="hint">Get it from BotFather: open Telegram, message <code>@BotFather</code>, run <code>/newbot</code>, then copy the token.</div>
+
+      <label class="field">Discord bot token</label>
+      <input id="discordToken" type="password" placeholder="Bot token" />
+      <div class="hint">From the Discord Developer Portal: create an application, add a Bot, then copy the Bot Token. Enable <strong>MESSAGE CONTENT INTENT</strong> in Bot > Privileged Gateway Intents, or the bot will crash on startup.</div>
+
+      <div class="grid2">
+        <div>
+          <label class="field">Slack bot token</label>
+          <input id="slackBotToken" type="password" placeholder="xoxb-…" />
+        </div>
+        <div>
+          <label class="field">Slack app token</label>
+          <input id="slackAppToken" type="password" placeholder="xapp-…" />
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="step-head">
+        <h2>Custom OpenAI-compatible provider</h2>
+        <span class="step-num">advanced · optional</span>
+      </div>
+      <p class="muted">For APIs that need a custom base URL (Ollama, vLLM, LM Studio, hosted proxies). Set the API key as a Railway variable and reference it here.</p>
+
+      <div class="grid2">
+        <div>
+          <label class="field">Provider id (e.g. ollama, deepseek)</label>
+          <input id="customProviderId" placeholder="ollama" />
+        </div>
+        <div>
+          <label class="field">API</label>
+          <select id="customProviderApi">
+            <option value="openai-completions">openai-completions</option>
+            <option value="openai-responses">openai-responses</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="field">Base URL (must include /v1)</label>
+      <input id="customProviderBaseUrl" placeholder="http://127.0.0.1:11434/v1" />
+
+      <div class="grid2">
+        <div>
+          <label class="field">API key env var name (optional)</label>
+          <input id="customProviderApiKeyEnv" placeholder="OLLAMA_API_KEY" />
+        </div>
+        <div>
+          <label class="field">Model id to register (optional)</label>
+          <input id="customProviderModelId" placeholder="llama3.1:8b" />
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="step-head">
+        <h2>Run onboarding</h2>
+        <span class="step-num">step 3</span>
+      </div>
+      <p class="muted">Runs the same onboarding command OpenClaw uses in the terminal. Output appears below.</p>
+      <div class="btn-row">
+        <button id="run" class="btn primary">Run setup</button>
+        <button id="pairingApprove" class="btn">Approve pairing</button>
+        <button id="reset" class="btn danger">Reset setup</button>
+      </div>
+      <pre id="log" class="out"></pre>
+      <p class="hint">Reset deletes the OpenClaw config file so you can rerun onboarding. Pairing approval grants DM access when dmPolicy=pairing.</p>
+    </section>
+
+    <details class="adv">
+      <summary>Pairing helper — fix “disconnected (1008): pairing required”</summary>
+      <div class="card">
+        <p class="muted">Lists pending device requests and lets you approve them without SSH.</p>
+        <div class="btn-row">
+          <button id="devicesRefresh" class="btn small">Refresh pending devices</button>
+        </div>
+        <div id="devicesList" class="muted device-list"></div>
+      </div>
+    </details>
+
+    <details class="adv">
+      <summary>Debug console</summary>
+      <div class="card">
+        <p class="muted">Run a small allowlist of safe commands (no shell). Useful for debugging and recovery.</p>
+        <div class="console-row">
+          <select id="consoleCmd">
+            <option value="gateway.restart">gateway.restart (wrapper-managed)</option>
+            <option value="gateway.stop">gateway.stop (wrapper-managed)</option>
+            <option value="gateway.start">gateway.start (wrapper-managed)</option>
+            <option value="openclaw.status">openclaw status</option>
+            <option value="openclaw.health">openclaw health</option>
+            <option value="openclaw.doctor">openclaw doctor</option>
+            <option value="openclaw.logs.tail">openclaw logs --tail N</option>
+            <option value="openclaw.config.get">openclaw config get &lt;path&gt;</option>
+            <option value="openclaw.version">openclaw --version</option>
+            <option value="openclaw.devices.list">openclaw devices list</option>
+            <option value="openclaw.devices.approve">openclaw devices approve &lt;requestId&gt;</option>
+            <option value="openclaw.plugins.list">openclaw plugins list</option>
+            <option value="openclaw.plugins.enable">openclaw plugins enable &lt;name&gt;</option>
+          </select>
+          <input id="consoleArg" placeholder="Optional arg (e.g. 200, gateway.port)" />
+          <button id="consoleRun" class="btn">Run</button>
+        </div>
+        <pre id="consoleOut" class="out"></pre>
+      </div>
+    </details>
+
+    <details class="adv">
+      <summary>Config editor (advanced)</summary>
+      <div class="card">
+        <p class="muted">Edits the full config file on disk (JSON5). Saving creates a timestamped <code>.bak-*</code> backup and restarts the gateway.</p>
+        <div class="muted" id="configPath"></div>
+        <textarea id="configText" spellcheck="false"></textarea>
+        <div class="btn-row">
+          <button id="configReload" class="btn small">Reload</button>
+          <button id="configSave" class="btn small primary">Save</button>
+        </div>
+        <pre id="configOut" class="out"></pre>
+      </div>
+    </details>
+
+    <details class="adv">
+      <summary>Backup &amp; restore</summary>
+      <div class="card">
+        <p class="muted"><strong>Import backup</strong> (advanced): restores a <code>.tar.gz</code> into <code>/data</code> and restarts the gateway.</p>
+        <input id="importFile" type="file" accept=".tar.gz,application/gzip" />
+        <div class="btn-row">
+          <button id="importRun" class="btn danger small">Import backup</button>
+        </div>
+        <pre id="importOut" class="out"></pre>
+      </div>
+    </details>
+
+  </div>
+
+  <script src="/setup/app.js"></script>
+</body>
+</html>
